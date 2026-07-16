@@ -4,3 +4,5 @@
 1783964830763	Delete resource '001FreeRTOS_Projects/ThirdParty/FreeRTOS/portable/MemMang/IAR'
 1784050893671	Rename resource '001FreeRTOS_Projects'
 1784097360813	Delete resource '001Tasks'
+1784191166562	Delete resource '002LED_Tasks/common/ThirdParty/FreeRTOS/FreeRTOSConfig.h'
+1784228420684	Delete resource '003LED_Block_Task'
