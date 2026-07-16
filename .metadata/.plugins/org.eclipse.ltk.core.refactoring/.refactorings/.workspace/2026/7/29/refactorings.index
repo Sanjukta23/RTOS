@@ -6,3 +6,4 @@
 1784097360813	Delete resource '001Tasks'
 1784191166562	Delete resource '002LED_Tasks/common/ThirdParty/FreeRTOS/FreeRTOSConfig.h'
 1784228420684	Delete resource '003LED_Block_Task'
+1784230075362	Delete resource '004LED_Periodic_Tasks/003LED_BlockingAPI_Task.launch'
