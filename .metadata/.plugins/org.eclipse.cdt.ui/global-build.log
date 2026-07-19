@@ -1,21 +1,14 @@
-08:26:50 **** Incremental Build of configuration Debug for project 008Queues ****
+23:12:01 **** Incremental Build of configuration Debug for project 009Binary_Semaphore ****
 make -j12 all 
-arm-none-eabi-gcc "../Core/Src/task_handler.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"D:/Embedded/RTOS/common/ThirdParty/FreeRTOS/include" -I"D:/Embedded/RTOS/common/ThirdParty/FreeRTOS/portable/GCC/ARM_CM4F" -I"D:/Embedded/RTOS/common/ThirdParty/SEGGER/config" -I"D:/Embedded/RTOS/common/ThirdParty/SEGGER/OS" -I"D:/Embedded/RTOS/common/ThirdParty/SEGGER/SEGGER" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/task_handler.d" -MT"Core/Src/task_handler.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/task_handler.o"
-arm-none-eabi-gcc -o "008Queues.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\Embedded\RTOS\008Queues\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="008Queues.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
-Finished building target: 008Queues.elf
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F446xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -I"D:/Embedded/RTOS/common/ThirdParty/FreeRTOS/include" -I"D:/Embedded/RTOS/common/ThirdParty/FreeRTOS/portable/GCC/ARM_CM4F" -I"D:/Embedded/RTOS/common/ThirdParty/SEGGER/config" -I"D:/Embedded/RTOS/common/ThirdParty/SEGGER/OS" -I"D:/Embedded/RTOS/common/ThirdParty/SEGGER/SEGGER" -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+arm-none-eabi-gcc -o "009Binary_Semaphore.elf" @"objects.list"   -mcpu=cortex-m4 -T"D:\Embedded\RTOS\009Binary_Semaphore\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="009Binary_Semaphore.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 009Binary_Semaphore.elf
  
-arm-none-eabi-size  008Queues.elf 
-arm-none-eabi-objdump -h -S 008Queues.elf  > "008Queues.list"
+arm-none-eabi-size  009Binary_Semaphore.elf 
+arm-none-eabi-objdump -h -S 009Binary_Semaphore.elf  > "009Binary_Semaphore.list"
    text	   data	    bss	    dec	    hex	filename
-  39320	    128	  18008	  57456	   e070	008Queues.elf
+  37776	    108	  85228	 123112	  1e0e8	009Binary_Semaphore.elf
 Finished building: default.size.stdout
  
-Finished building: 008Queues.list
- 
-08:32:47 **** Incremental Build of configuration Debug for project 008Queues ****
-make -j12 all 
-arm-none-eabi-size  008Queues.elf 
-   text	   data	    bss	    dec	    hex	filename
-  39320	    128	  18008	  57456	   e070	008Queues.elf
-Finished building: default.size.stdout
+Finished building: 009Binary_Semaphore.list
  
