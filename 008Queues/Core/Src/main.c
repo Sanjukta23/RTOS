@@ -61,6 +61,7 @@ QueueHandle_t q_print;
 
 //software timer handles
 TimerHandle_t  handle_led_timer[4];
+TimerHandle_t rtc_timer;
 
 volatile uint8_t user_data;
 
@@ -77,7 +78,7 @@ static void MX_USART2_UART_Init(void);
 
 
 void led_effect_callback(TimerHandle_t xTimer);
-
+void rtc_report_callback( TimerHandle_t xTimer );
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -117,9 +118,11 @@ int main(void)
   MX_RTC_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  status = xTaskCreate(menu_task, "menu_task", 250, NULL, 2, &handle_menu_task);
 
-  	configASSERT(status == pdPASS);
+
+    status = xTaskCreate(menu_task, "menu_task", 250, NULL, 2, &handle_menu_task);
+
+    configASSERT(status == pdPASS);
 
   	status = xTaskCreate(cmd_handler_task, "cmd_task", 250, NULL, 2, &handle_cmd_task);
 
@@ -148,6 +151,8 @@ int main(void)
   	//Create software timers for LED effects
   	for(int i = 0 ; i < 4 ; i++)
   		handle_led_timer[i] = xTimerCreate("led_timer",pdMS_TO_TICKS(500),pdTRUE, (void*)(i+1),led_effect_callback);
+
+  	rtc_timer = xTimerCreate ("rtc_report_timer",pdMS_TO_TICKS(1000),pdTRUE,NULL,rtc_report_callback);
 
   	HAL_UART_Receive_IT(&huart2, (uint8_t*)&user_data, 1);
 	vTaskStartScheduler();
@@ -322,6 +327,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void rtc_report_callback( TimerHandle_t xTimer )
+{
+	 show_time_date_itm();
+
+}
+
+
 void led_effect_callback(TimerHandle_t xTimer)
 {
 	 int id;
@@ -375,6 +387,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 }
 
+
+// In your main.c (or wherever your hooks live)
+void vApplicationMallocFailedHook(void)
+{
+    printf("MALLOC FAILED\r\n");
+    for(;;);
+}
 /* USER CODE END 4 */
 
 /**
