@@ -69,17 +69,18 @@ TaskHandle_t xTaskHandle2=NULL;
 
 void printmsg(char *msg);
 
+/* Dimensions the buffer into which messages destined for stdout are placed. */
+#define mainMAX_MSG_LEN	( 80 )
 
-/* The tasks to be created. */
-void vTask1( void *pvParameters );
-void vTask2( void *pvParameters );
+/* The task to be created.  Two instances of this task are created. */
+static void prvPrintTask( void *pvParameters );
 
-/* Used as a loop counter to create a very crude delay. */
-#define mainDELAY_LOOP_COUNT		( 0xfffff )
+/* The function that uses a mutex to control access to standard out. */
+static void prvNewPrintString( const portCHAR *pcString );
 
 extern void SEGGER_UART_init(uint32_t);
 
-xSemaphoreHandle xBinarySemaphore;
+xSemaphoreHandle xMutex;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -127,38 +128,26 @@ int main(void)
   	SEGGER_SYSVIEW_Start();
 
 
-  	sprintf(usr_msg,"Demo of Mutual exclusion using binary semaphore\r\n");
+  	sprintf(usr_msg,"Demo of Mutual exclusion using Mutex\r\n");
   		printmsg(usr_msg);
 
-  		//Creating a binary semaphore
-  		vSemaphoreCreateBinary(xBinarySemaphore);
+  		xMutex = xSemaphoreCreateMutex();
+  		/* The tasks are going to use a pseudo random delay, seed the random number
+  			generator. */
+  			srand( 567 );
 
-  		 if(xBinarySemaphore != NULL)
-  		 {
+  			if( xMutex != NULL )
+  				{
   				/* Create one of the two tasks. */
-  				xTaskCreate(	vTask1,		/* Pointer to the function that implements the task. */
-  								"Task 1",	/* Text name for the task.  This is to facilitate debugging only. */
-  								500,		/* Stack depth in words. */
-  								NULL,		/* We are not using the task parameter. */
-  								1,			/* This task will run at priority 1. */
-  								NULL );		/* We are not using the task handle. */
+  				/* Create two instances of the tasks that attempt to write stdout.  The
+  						string they attempt to write is passed in as the task parameter.  The tasks
+  						are created at different priorities so some pre-emption will occur. */
+  						xTaskCreate( prvPrintTask, "Print1", 240, "Task 1 ******************************************\r\n", 1, NULL );
+  						xTaskCreate( prvPrintTask, "Print2", 240, "Task 2 ------------------------------------------\r\n", 2, NULL );
 
-  				/* Create the other task in exactly the same way. */
-  				xTaskCreate( vTask2, "Task 2", 500, NULL, 1, NULL );
-
-  				//makes sema available for the first time
-  				xSemaphoreGive(xBinarySemaphore);
-
-  				/* Start the scheduler so our tasks start executing. */
-  				vTaskStartScheduler();
-  		 }else
-  		 {
-  			 sprintf(usr_msg,"binary semaphore creation failed\r\n");
-  			 printmsg(usr_msg);
-
+  						/* Start the scheduler so the created tasks start executing. */
+  						vTaskStartScheduler();
   		 }
-
-
   		/* If all is well we will never reach here as the scheduler will now be
   		running.  If we do reach here then it is likely that there was insufficient
   		heap available for the idle task to be created. */
@@ -166,53 +155,58 @@ int main(void)
   	}
   	/*-----------------------------------------------------------*/
 
-  	void vTask1( void *pvParameters )
-  	{
-  		const char *pcTaskName = "Task 1 is running\r\n";
+static void prvNewPrintString( const portCHAR *pcString )
+{
+static char cBuffer[ mainMAX_MSG_LEN ];
 
-  		/* As per most tasks, this task is implemented in an infinite loop. */
-  		for( ;; )
-  		{
+	/* The semaphore is created before the scheduler is started so already
+	exists by the time this task executes.
 
-  			//before printing , lets own the semaphore or take the semaphore */
-  			xSemaphoreTake( xBinarySemaphore, portMAX_DELAY );
+	Attempt to take the semaphore, blocking indefinitely if the mutex is not
+	available immediately.  The call to xSemaphoreTake() will only return when
+	the semaphore has been successfully obtained so there is no need to check the
+	return value.  If any other delay period was used then the code must check
+	that xSemaphoreTake() returns pdTRUE before accessing the resource (in this
+	case standard out. */
+	xSemaphoreTake( xMutex, portMAX_DELAY );
+	{
 
-  			/* Print out the name of this task. */
-  			sprintf( usr_msg,"%s",pcTaskName);
-  			printmsg(usr_msg);
+		/* The following line will only execute once the semaphore has been
+		successfully obtained - so standard out can be accessed freely. */
+		sprintf( cBuffer, "%s", pcString );
+		printmsg(cBuffer);
 
-  			//give the semaphore here. give operation increases the bin sema value back to 1
-  			xSemaphoreGive(xBinarySemaphore);
+	}
+	xSemaphoreGive( xMutex );
 
-  			/*Now this task will be blocked for 500ticks */
-  			vTaskDelay( pdMS_TO_TICKS(500) );
-  		}
-  	}
-  	/*-----------------------------------------------------------*/
 
-  	void vTask2( void *pvParameters )
-  	{
+}
+/*-----------------------------------------------------------*/
 
-  		const char *pcTaskName = "Task 2 is running\r\n";
+static void prvPrintTask( void *pvParameters )
+{
+char *pcStringToPrint;
 
-  		/* As per most tasks, this task is implemented in an infinite loop. */
-  		for( ;; )
-  		{
+	/* Two instances of this task are created so the string the task will send
+	to prvNewPrintString() is passed in the task parameter.  Cast this to the
+	required type. */
+	pcStringToPrint = ( char * ) pvParameters;
 
-  			//before printing , lets own the semaphore or take the semaphore */
-  			xSemaphoreTake( xBinarySemaphore, portMAX_DELAY );
+	for( ;; )
+	{
+		/* Print out the string using the newly defined function. */
+		prvNewPrintString( pcStringToPrint );
 
-  			/* Print out the name of this task. */
-  			sprintf( usr_msg,"%s",pcTaskName);
-  			printmsg(usr_msg);
+		/* Wait a pseudo random time.  Note that rand() is not necessarily
+		re-entrant, but in this case it does not really matter as the code does
+		not care what value is returned.  In a more secure application a version
+		of rand() that is known to be re-entrant should be used - or calls to
+		rand() should be protected using a critical section. */
+		vTaskDelay( rand() & 0XF );
+	}
+}
+/*-----------------------------------------------------------*/
 
-  			//give the semaphore here. give operation increases the bin sema value back to 1
-  			xSemaphoreGive(xBinarySemaphore);
-
-  			/*Now this task will be blocked for 500ticks */
-  			vTaskDelay( pdMS_TO_TICKS(500));
-  		}
-  	}
  /* USER CODE END 2 */
 
 
